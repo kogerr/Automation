@@ -1,3 +1,5 @@
+package repair;
+
 import java.awt.Desktop;
 import java.io.*;
 import java.nio.file.Files;
@@ -27,7 +29,7 @@ public class RepairXml {
         if (newContent.contains("�")) {
             System.out.println("ENCODING ERROR");
         }
-        
+
         if (preDefSigNo == 0) {
             try {
                 Desktop.getDesktop().open(targetFile);
@@ -35,7 +37,7 @@ public class RepairXml {
                 e1.printStackTrace();
             }
         }
-        
+
         System.out.println("\nDONE");
     }
 
@@ -62,7 +64,7 @@ public class RepairXml {
             while (stepxmpMatcher.find()) {
                 Matcher longLine = Pattern.compile("\n.{65,}?\n").matcher(stepxmpMatcher.group(1).replace("<preform>", "").replace("</preform>", ""));
                 if (longLine.find()) {
-                    //System.out.println("Turning stepxmp condensed:\n" + longLine.group());
+                    // System.out.println("Turning stepxmp condensed:\n" + longLine.group());
                     String replacement = stepxmpMatcher.group().replace("<stepxmp>", "<stepxmp condensed=\"yes\">");
                     text = text.replace(stepxmpMatcher.group(), replacement);
                 }
@@ -76,31 +78,17 @@ public class RepairXml {
         text = text.replaceFirst("<list type=\"numeric\".*?>", "<step-list>");
         while (text.substring(cursor).contains("<list type=\"unordered\" compact=\"no\">")) {
             int index = cursor + (text.substring(cursor).indexOf("<list type=\"unordered\" compact=\"no\">"));
-            text = text.substring(0, cursor) 
-                    + text.substring(cursor, index)
-                    .replaceAll("<list-item.*?>", "<sl-item>")
-                    .replace("</list-item>", "</sl-item>")
-                    .replaceAll("<example.*?>", "<stepxmp>")
-                    .replace("</example>", "</stepxmp>")
-                    .replace("<p><preform>", "<stepxmp>\n<preform>\n")
-                    .replace("</preform></p>", "\n</preform>\n</stepxmp>")
-                    .replace("<table", "</sl-item>\n</step-list>\n<table")
-                    .replace("</table>", "</table>\n<step-list reset=\"no\">\n<sl-item>") 
-                    + text.substring(index);
+            text = text.substring(0, cursor) + text.substring(cursor, index).replaceAll("<list-item.*?>", "<sl-item>").replace("</list-item>", "</sl-item>")
+                    .replaceAll("<example.*?>", "<stepxmp>").replace("</example>", "</stepxmp>").replace("<p><preform>", "<stepxmp>\n<preform>\n")
+                    .replace("</preform></p>", "\n</preform>\n</stepxmp>").replace("<table", "</sl-item>\n</step-list>\n<table")
+                    .replace("</table>", "</table>\n<step-list reset=\"no\">\n<sl-item>") + text.substring(index);
             cursor = index + text.substring(index).indexOf("</list>") + 7;
         }
 
-        text = text.substring(0, cursor) 
-                + text.substring(cursor)
-                .replaceAll("<list-item.*?>", "<sl-item>")
-                .replace("</list-item>", "</sl-item>")
-                .replaceAll("<example.*?>", "<stepxmp>")
-                .replace("</example>", "</stepxmp>")
-                .replace("</list>", "</step-list>")
-                .replace("<p><preform>", "<stepxmp><preform>\n")
-                .replace("</preform></p>", "\n</preform></stepxmp>")
-                .replace("<table", "</sl-item>\n</step-list>\n<table")
-                .replace("</table>", "</table>\n<step-list reset=\"no\">\n<sl-item>");
+        text = text.substring(0, cursor) + text.substring(cursor).replaceAll("<list-item.*?>", "<sl-item>").replace("</list-item>", "</sl-item>")
+                .replaceAll("<example.*?>", "<stepxmp>").replace("</example>", "</stepxmp>").replace("</list>", "</step-list>")
+                .replace("<p><preform>", "<stepxmp><preform>\n").replace("</preform></p>", "\n</preform></stepxmp>")
+                .replace("<table", "</sl-item>\n</step-list>\n<table").replace("</table>", "</table>\n<step-list reset=\"no\">\n<sl-item>");
 
         return figuresInSL(text);
     }
@@ -112,30 +100,27 @@ public class RepairXml {
         list = list.replace("</list>", "</substeps>");
         return list;
     }
-    
+
     private String breakAtSL(String text) {
-        while (text.contains("<list type=\"numeric")){
+        while (text.contains("<list type=\"numeric")) {
             int beginIndex = text.indexOf("<list type=\"numeric");
             int endIndex = text.indexOf("</list>", beginIndex) + 7;
-            text = text.substring(0, beginIndex)
-                    + "</list-item></list>"
-                    + turnToSL(text.substring(beginIndex, endIndex))
-                    + "<list type=\"unordered\" compact=\"no\"><list-item compact=\"no\">"
-                    + text.substring(endIndex);
+            text = text.substring(0, beginIndex) + "</list-item></list>" + turnToSL(text.substring(beginIndex, endIndex))
+                    + "<list type=\"unordered\" compact=\"no\"><list-item compact=\"no\">" + text.substring(endIndex);
         }
         text = text.replaceAll("<list-item compact=\"no\">\n?</list-item>", "");
         text = text.replaceAll("<list type=\"unordered\" compact=\"no\">\n?</list>", "");
-        
+
         return text;
     }
-    
+
     private String steplist(final String string) throws StringIndexOutOfBoundsException {
         StringBuilder text = new StringBuilder(string);
         int cursor = 0;
         String numTag = "<list type=\"numeric";
         String listTag = "<list type";
         String cTag = "</list>";
-                
+
         // while there are numeric lists after the cursor
         while (text.substring(cursor).contains(numTag)) {
             int listBegin = text.indexOf(listTag, cursor);
@@ -149,7 +134,7 @@ public class RepairXml {
                 listClosing = text.indexOf(cTag, listClosing) + 7;
                 list = text.substring(listBegin, listClosing);
             }
-            
+
             if (nestedLists > 0) {
                 // if it is an unordered list
                 if (!list.startsWith(numTag)) {
@@ -166,10 +151,9 @@ public class RepairXml {
             while (count(numTag, list) > 1) {
                 int beginIndex = text.indexOf(numTag, listBegin + 10);
                 int endIndex = text.indexOf(cTag, beginIndex) + 7;
-                int kul = turnToSubstep(text.substring(beginIndex, endIndex))
-                        .length() - text.substring(beginIndex, endIndex).length();
+                int kul = turnToSubstep(text.substring(beginIndex, endIndex)).length() - text.substring(beginIndex, endIndex).length();
                 text.replace(beginIndex, endIndex, turnToSubstep(text.substring(beginIndex, endIndex)));
-                
+
                 listClosing += kul;
                 list = text.substring(listBegin, listClosing);
             }
@@ -177,16 +161,16 @@ public class RepairXml {
             int newSize = turnToSL(text.substring(listBegin, listClosing)).length();
             text.replace(listBegin, listClosing, turnToSL(text.substring(listBegin, listClosing)));
             cursor = listBegin + newSize;
-            
+
         }
 
         // replace figures
-        return  text.toString();
+        return text.toString();
     }
 
     /**
      * turns tables in lists that have captions into grid
-     * 
+     *
      * @param text
      * @return repaired text
      */
@@ -235,10 +219,11 @@ public class RepairXml {
         String regex = "<" + tag + ".*?>.*?</" + tag + ">";
         Matcher matcher = Pattern.compile(regex, Pattern.DOTALL).matcher(where);
         String raw;
-        if (matcher.find())
+        if (matcher.find()) {
             raw = matcher.group();
-        else
+        } else {
             return "";
+        }
         int beginIndex = raw.indexOf('>') + 1;
         int endIndex = raw.lastIndexOf('<');
         return raw.substring(beginIndex, endIndex);
@@ -254,8 +239,8 @@ public class RepairXml {
         }
         return text;
     }
-    
-    private static String[][] loadSignatures(){
+
+    private static String[][] loadSignatures() {
         Properties props = new Properties();
         try {
             props.load(RepairXml.class.getResourceAsStream("signatures.txt"));
@@ -264,17 +249,17 @@ public class RepairXml {
         }
         String[][] sig = new String[9][2];
         for (int i = 1; i < 10; i++) {
-            sig[i-1] = props.getProperty(Integer.toString(i)).split(",");
+            sig[i - 1] = props.getProperty(Integer.toString(i)).split(",");
         }
-        return sig;        
+        return sig;
     }
-    
+
     private String addSignature(String string) {
         StringBuilder text = new StringBuilder(string);
         final String[][] SIGNATURES = loadSignatures();
-        
+
         int choice = 0;
-        
+
         if (preDefSigNo == 0) {
             if (sig[1].length() < 3) {
                 System.out.println("\nNo signature!\nAdd signature?");
@@ -297,15 +282,13 @@ public class RepairXml {
         } else {
             choice = preDefSigNo - 1;
         }
-        
+
         int beginIndex = text.indexOf("<drafted-by>") + 12;
         int endIndex = text.indexOf("</drafted-by>");
         beginIndex = text.indexOf("<person>", beginIndex) + 8;
         endIndex = text.indexOf("<location", beginIndex);
-        
-        String newSig = "<name>" 
-                + SIGNATURES[choice][0] + "</name><signature>" 
-                + SIGNATURES[choice][1] + "</signature>\n";
+
+        String newSig = "<name>" + SIGNATURES[choice][0] + "</name><signature>" + SIGNATURES[choice][1] + "</signature>\n";
         text.replace(beginIndex, endIndex, newSig);
         return text.toString();
     }
@@ -341,13 +324,11 @@ public class RepairXml {
         // resource-id inside emph
         text = text.replaceAll("<emph.*?>(<resource-id.+?/resource-id>)</emph>", "$1");
         // figures in paragraphs
-        text = text.replaceAll("(?s)<p>Figure \\d\\.\\s(.*?)(<figure.+?/>).+?</p>", 
-                "$2" + "\n<caption>" + "$1" + "</caption></figure>");
+        text = text.replaceAll("(?s)<p>Figure \\d\\.\\s(.*?)(<figure.+?/>).+?</p>", "$2" + "\n<caption>" + "$1" + "</caption></figure>");
         // figures in table paragraphs
         text = text.replaceAll("(?s)<tp><figure.+?(<graphics.+?/>).*?</figure>", "<tp>$1");
         // empty reference list
-        text = text.replaceFirst("(<reference xml:id=\"references\">)\n(</reference>)", 
-                "$1<reference-list><rf-subsection></rf-subsection></reference-list>$2");
+        text = text.replaceFirst("(<reference xml:id=\"references\">)\n(</reference>)", "$1<reference-list><rf-subsection></rf-subsection></reference-list>$2");
 
         // scalefit of graphics set to 1
         text = text.replace("scalefit=\"0\"", "scalefit=\"1\"");
@@ -387,7 +368,7 @@ public class RepairXml {
     public RepairXml(File targetFile) {
         this(targetFile, 0);
     }
-    
+
     public RepairXml(File targetFile, int preDefSigNo) {
         this.targetFile = targetFile;
         System.out.println(targetFile.getName());

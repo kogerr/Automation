@@ -1,3 +1,4 @@
+package repair;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,7 +21,7 @@ public class Approver {
 		    System.err.format("IOException: %s%n", x);
 		}
 		// check for wrong characters
-		if (newContent.contains("â")) System.out.println("ENCODING ERROR");
+		if (newContent.contains("ï¿½")) System.out.println("ENCODING ERROR");
 	}
 	
 	private String removeRev(String text){

@@ -6,6 +6,8 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
+import repair.RepairXml;
+
 /**
  * Scans a directory for .xml files, and runs a class on them.
  * @author Gergely Kovacs
