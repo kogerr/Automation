@@ -12,7 +12,11 @@ public class Combination {
     combination = new byte[length];
     Arrays.fill(combination, MIN_VALUE);
   }
-  
+
+  Combination(byte[] from) {
+    combination = Arrays.copyOf(from, from.length);
+  }
+
   private void step(int cursor) {
     if (combination[cursor] < MAX_VALUE) {
       combination[cursor]++;
@@ -25,11 +29,11 @@ public class Combination {
       }
     }
   }
-  
+
   public void step() {
     step(combination.length - 1);
   }
-  
+
   @Override
   public String toString() {
     return new String(combination);
@@ -37,5 +41,11 @@ public class Combination {
 
   public boolean isAtMax() {
     return atMax;
+  }
+
+  public static Combination maxCombination(int length) {
+      byte[] combination = new byte[length];
+      Arrays.fill(combination, MAX_VALUE);
+      return new Combination(combination);
   }
 }

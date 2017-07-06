@@ -3,11 +3,11 @@ package counter;
 class App {
 
   public static void main(String[] args) {
-    Combination combination = new Combination(6);
-    while (!combination.isAtMax()) {
-      System.out.println(combination);
-      combination.step();
-    }
+    String targetHashCode = new HashCalculator().hash("abbaaa");
+    int length = 6;
+    CombinationChecker checker = new CombinationChecker(new Combination(length), Combination.maxCombination(length), targetHashCode);
+    checker.call();
+    System.out.println("megvan");
   }
 
 }
