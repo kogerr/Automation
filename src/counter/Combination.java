@@ -17,6 +17,12 @@ public class Combination {
     combination = Arrays.copyOf(from, from.length);
   }
 
+  Combination(Combination a, Combination b) {
+      combination = new byte[a.combination.length + b.combination.length];
+      System.arraycopy(a.combination, 0, combination, 0, a.combination.length);
+      System.arraycopy(b.combination, 0, combination, a.combination.length, b.combination.length);
+  }
+
   private void step(int cursor) {
     if (combination[cursor] < MAX_VALUE) {
       combination[cursor]++;
@@ -33,6 +39,13 @@ public class Combination {
   public void step() {
     step(combination.length - 1);
   }
+
+  public void stepBy(int stepsToMake) {
+      int i = 0;
+      while (i++ < stepsToMake) {
+          step();
+      }
+    }
 
   @Override
   public String toString() {
